@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Ninject;
 
 namespace DIContainerSample
 {
@@ -35,7 +36,7 @@ namespace DIContainerSample
                 else
                 {
                     kernel.Bind<ICalculator>().To<ServerCalculator>().InTransientScope();
-
+                    kernel.Bind<ILogger>().To<ExtendedLogger>().InSingletonScope();
                 }
                 kernel.Bind<ServerProxy>().ToSelf();
 
@@ -44,12 +45,12 @@ namespace DIContainerSample
     }
 
     public interface ICalculator
-    {
+    { 
         int? Add(int a, int b);
         int? Substract(int a, int b);
     }
 
-    public class SimpleCalculator: ICalculator
+    public class SimpleCalculator : ICalculator
     {
         public int? Add(int a, int b)
         {
@@ -65,6 +66,14 @@ namespace DIContainerSample
     public class ServerCalculator : ICalculator
     {
         private readonly ServerProxy _proxy;
+        private ILogger _logger = new DefaultLogger();
+
+        [Inject]
+        public ILogger Logger
+        {
+            get { return _logger; }
+            set { _logger = value; }
+        }
 
         public ServerCalculator(ServerProxy proxy)
         {
@@ -77,14 +86,14 @@ namespace DIContainerSample
             try
             {
 
-                Console.WriteLine("{0}: Calculation started", correlationKey);
+                Logger.Log(LogLevel.Info, "{0}: Calculation started", correlationKey);
                 var res = _proxy.SendAdd(a, b);
-                Console.WriteLine("{0}: Calculation ended", correlationKey);
+                Logger.Log(LogLevel.Info, "{0}: Calculation ended", correlationKey);
                 return res;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("{0}: Calculation failed with error '{1}'", correlationKey, ex.Message);
+                Logger.Log(LogLevel.Error, "{0}: Calculation failed with error '{1}'", correlationKey, ex.Message);
                 return null;
             }
         }
@@ -95,14 +104,14 @@ namespace DIContainerSample
             try
             {
 
-                Console.WriteLine("{0}: Calculation started", correlationKey);
+                Logger.Log(LogLevel.Info, "{0}: Calculation started", correlationKey);
                 var res = _proxy.SendSubstract(a, b);
-                Console.WriteLine("{0}: Calculation ended", correlationKey);
+                Logger.Log(LogLevel.Info, "{0}: Calculation ended", correlationKey);
                 return res;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("{0}: Calculation failed with error '{1}'", correlationKey, ex.Message);
+                Logger.Log(LogLevel.Error, "{0}: Calculation failed with error '{1}'", correlationKey, ex.Message);
                 return null;
             }
         }
@@ -140,7 +149,7 @@ namespace DIContainerSample
         void Log(LogLevel level, string template, params object[] args);
     }
 
-    public class DefaultLogger: ILogger
+    public class DefaultLogger : ILogger
     {
         public void Log(LogLevel level, string template, params object[] args)
         {
