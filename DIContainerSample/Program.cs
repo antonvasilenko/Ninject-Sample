@@ -126,4 +126,35 @@ namespace DIContainerSample
             return a - b;
         }
     }
+
+    public enum LogLevel
+    {
+        Error,
+        Warning,
+        Info,
+        Debug
+    };
+
+    public interface ILogger
+    {
+        void Log(LogLevel level, string template, params object[] args);
+    }
+
+    public class DefaultLogger: ILogger
+    {
+        public void Log(LogLevel level, string template, params object[] args)
+        {
+            Console.WriteLine(template, args);
+        }
+    }
+
+    public class ExtendedLogger : ILogger
+    {
+        // TODO add writing to file
+
+        public void Log(LogLevel level, string template, params object[] args)
+        {
+            Console.WriteLine("{0}: {1}", level, String.Format(template, args));
+        }
+    }
 }
