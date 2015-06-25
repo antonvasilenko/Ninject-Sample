@@ -78,7 +78,7 @@ namespace DIContainerSample
             {
 
                 Console.WriteLine("{0}: Calculation started", correlationKey);
-                var res = a + b;
+                var res = _proxy.SendAdd(a, b);
                 Console.WriteLine("{0}: Calculation ended", correlationKey);
                 return res;
             }
@@ -96,7 +96,7 @@ namespace DIContainerSample
             {
 
                 Console.WriteLine("{0}: Calculation started", correlationKey);
-                var res = a - b;
+                var res = _proxy.SendSubstract(a, b);
                 Console.WriteLine("{0}: Calculation ended", correlationKey);
                 return res;
             }
@@ -112,14 +112,14 @@ namespace DIContainerSample
     {
         // own dependencies, like HttpClient, TokenService, Serializer, ...
 
-        int SendAdd(int a, int b)
+        public int SendAdd(int a, int b)
         {
             // POST http://some.external.server/add
             Thread.Sleep(1000);
             return a + b;
         }
 
-        int SendSubstract(int a, int b)
+        public int SendSubstract(int a, int b)
         {
             // POST http://some.external.server/add
             Thread.Sleep(1000);
